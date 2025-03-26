@@ -1,2 +1,2 @@
 # CPPFPTemplate-Dockerfile
-Dockerfile for CPPFPTemplate
+CPPFPTemplate Unreal Engine project with Windows build Dockerfile
