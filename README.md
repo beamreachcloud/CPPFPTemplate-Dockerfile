@@ -79,36 +79,36 @@ https://github.com/NGTstudio/ue5-docker
 
 1. Клонируем репозиторий и переходим в папку:
 
-'''bash
+```bash
 git clone https://github.com/NGTstudio/ue5-docker.git
 cd ue5-docker
-'''
+```
 
 2. Создаём файл .env и указываем свои GitHub-учётные данные:
 
-'''
+```
 GITHUB_USERNAME="your-github-username"
 GITHUB_TOKEN="your-personal-access-token"
-'''
+```
 
 3. Собираем полный образ
 
-'''
+```
 docker compose --env-file .env build ue5-full
-'''
+```
 
 4. Собираем образ с проектом
 
-'''powershell
+```powershell
 $env:DOCKER_BUILDKIT=""
 docker build -t ue5-builder -f Dockerfile.ue5-docker .
-'''
+```
 
 5. Запускаем сборку проекта внутри контейнера и монтируем текущую директорию для сохранения артефактов:
 
-'''powershell
+```powershell
 docker run --rm -v "C:\artifacts:C:\project" ue5-builder
-'''
+```
 
 6. Готовый билд будет доступен по пути:
 
@@ -128,6 +128,6 @@ Windows контейнеры не поддерживают пока --secret mou
 
 4. Во время разработки подобных имаджей, рекомендую сохранять промежуточные результаты при помощи
 
-'''
+```
 docker commit <id> <name>
-'''
+```
