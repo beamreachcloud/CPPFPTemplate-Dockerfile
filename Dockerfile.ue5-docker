@@ -1,0 +1,9 @@
+FROM ue5-docker_ue5-full
+
+WORKDIR C:\\project
+COPY . C:\\project
+
+RUN GenerateProjectFiles.bat
+RUN Engine\\Build\\BatchFiles\\Build.bat UnrealBuildTool Win64 Development
+
+CMD cmd /S /C "\"C:\\UnrealEngine\\Engine\\Build\\BatchFiles\\RunUAT.bat\" -ScriptsForProject=\"C:\\project\\CPPFPTemplate.uproject\" Turnkey -command=VerifySdk -platform=Win64 -UpdateIfNeeded -EditorIO -EditorIOPort=50020 -project=\"C:\\project\\CPPFPTemplate.uproject\" BuildCookRun -nop4 -utf8output -nocompileeditor -skipbuildeditor -cook -project=\"C:\\project\\CPPFPTemplate.uproject\" -target=CPPFPTemplate -unrealexe=\"C:\\UnrealEngine\\Engine\\Binaries\\Win64\\UnrealEditor-Cmd.exe\" -platform=Win64 -installed -stage -archive -package -build -pak -iostore -compressed -prereqs -archivedirectory=\"C:\\project\\BuildOutput\" -clientconfig=Shipping -nodebuginfo -nocompile -nocompileuat"
