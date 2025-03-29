@@ -52,22 +52,50 @@ RUN choco install visualstudio2019buildtools --version=16.11.45 --yes --ignore-c
   --add Microsoft.VisualStudio.Component.VC.CoreBuildTools \
   --includeRecommended --includeOptional --norestart'" > C:\\vs2019.log 2>&1 || type C:\\vs2019.log
 
-ENV PATH="C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64;C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\MSBuild\\Current\\Bin;%PATH%"
+COPY ./find.exe C:\\tools\\find.exe
+ENV PATH="C:\\tools;\
+  C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\MSBuild\\Current\\Bin;\
+  C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64;\
+  C:\\Windows\\System32;\
+  C:\\Windows;\
+  C:\\Windows\\System32\\Wbem;\
+  C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
 
 RUN GenerateProjectFiles.bat
 
-# --- Build required tools ---
-RUN Engine\\Build\\BatchFiles\\Build.bat UnrealBuildTool Win64 Development
-RUN Engine\\Build\\BatchFiles\\Build.bat UnrealHeaderTool Win64 Development
-RUN Engine\\Build\\BatchFiles\\Build.bat ShaderCompileWorker Win64 Development
-RUN Engine\\Build\\BatchFiles\\Build.bat UnrealLightmass Win64 Development
-RUN Engine\\Build\\BatchFiles\\Build.bat UnrealPak Win64 Development
-RUN Engine\\Build\\BatchFiles\\Build.bat UnrealFrontend Win64 Development
-RUN Engine\\Build\\BatchFiles\\Build.bat AutomationTool Win64 Development
+# For Minimal image
+RUN Engine\\Build\\BatchFiles\\Build.bat UnrealHeaderTool Win64 Development -MaxParallelActions=4
+RUN Engine\\Build\\BatchFiles\\Build.bat UnrealPak Win64 Development -MaxParallelActions=4
+
+# pathes from ue5-docker
+
+RUN C:\\ProgramData\\chocolatey\\bin\\choco.exe install python --version=3.9.13 -y --no-progress --installargs 'PrependPath=1'
+
+COPY patch-filters-xml.py C:\\patch-filters-xml.py
+COPY patch-build-graph.py C:\\patch-build-graph.py
+RUN C:\\Python39\\python.exe C:\\patch-filters-xml.py C:\\UnrealEngine\\Engine\\Build\\InstalledEngineFilters.xml
+RUN C:\\Python39\\python.exe C:\\patch-build-graph.py C:\\UnrealEngine\\Engine\\Build\\InstalledEngineBuild.xml
+
+WORKDIR C:\\project
+COPY . C:\\project\\
+RUN dir C:\project
+
+# --- Enable compiler environment ---
+RUN call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\vcvars64.bat" && \
+  C:\\UnrealEngine\\Engine\\Build\\BatchFiles\\RunUAT.bat BuildGraph \
+  -Script=C:\\UnrealEngine\\Engine\\Build\\InstalledEngineBuild.xml \
+  -Target="Build Tools Win64" \
+  -Set:HostPlatformOnly=true 
+  -Set:WithDDC=true
+
+# For Full image
+#RUN Engine\\Build\\BatchFiles\\RunUAT.bat BuildGraph -Script=Engine/Build/InstalledEngineBuild.xml -Target="Build Tools Win64" -Set:WithWin64=true -Set:HostPlatformOnly=true
+#RUN Engine\\Build\\BatchFiles\\Build.bat UnrealFrontend Win64 Development -MaxParallelActions=4
+#RUN Engine\\Build\\BatchFiles\\Build.bat ShaderCompileWorker Win64 Development -MaxParallelActions=4
+#RUN Engine\\Build\\BatchFiles\\Build.bat UnrealLightmass Win64 Development -MaxParallelActions=4
 
 # --- Copy your UE project into the container ---
-WORKDIR C:\\project
-COPY . C:\\project
+#WORKDIR C:\\project
+#COPY . C:\\project
 
-# --- Final command: Build & package the project using UAT ---
-CMD cmd /S /C "\"C:\\UnrealEngine\\Engine\\Build\\BatchFiles\\RunUAT.bat\" -ScriptsForProject=\"C:\\project\\CPPFPTemplate.uproject\" Turnkey -command=VerifySdk -platform=Win64 -UpdateIfNeeded -EditorIO -EditorIOPort=50020 -project=\"C:\\project\\CPPFPTemplate.uproject\" BuildCookRun -nop4 -utf8output -nocompileeditor -skipbuildeditor -cook -project=\"C:\\project\\CPPFPTemplate.uproject\" -target=CPPFPTemplate -unrealexe=\"C:\\UnrealEngine\\Engine\\Binaries\\Win64\\UnrealEditor-Cmd.exe\" -platform=Win64 -installed -stage -archive -package -build -pak -iostore -compressed -prereqs -archivedirectory=\"C:\\project\\BuildOutput\" -clientconfig=Shipping -nodebuginfo -nocompile -nocompileuat"
+CMD ["cmd", "/S", "/C", "start.bat"]
