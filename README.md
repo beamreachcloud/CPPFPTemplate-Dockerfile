@@ -10,10 +10,10 @@
    https://www.unrealengine.com/en-US/ue-on-github
 
 2. Логинимся в реестр контейнеров GitHub:  
-   👉 https://docs.github.com/ru/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry
+   https://docs.github.com/ru/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry
 
 3. Если что-то идёт не так — воспользуйтесь официальной инструкцией Epic Games:  
-   👉 https://dev.epicgames.com/documentation/en-us/unreal-engine/quick-start-guide-for-using-container-images-in-unreal-engine
+   https://dev.epicgames.com/documentation/en-us/unreal-engine/quick-start-guide-for-using-container-images-in-unreal-engine
 
 4. Создаём файл `%USERPROFILE%\.ue4-docker\credentials.json` со следующим содержимым:
 
@@ -63,7 +63,7 @@ docker build -t ue5-builder --build-arg GITHUB_USERNAME=$env:GITHUB_USERNAME --b
 2. Запускаем сборку проекта внутри контейнера и монтируем текущую директорию для сохранения артефактов:
 
 ```powershell
-docker run --rm -v "C:\artifacts:C:\project" ue5-builder
+docker run --rm -v "C:\artifacts:C:\project\BuildOutput" ue5-builder
 ```
 
 4. Готовый билд будет доступен по пути:
@@ -74,7 +74,7 @@ C:\artifacts\BuildOutput\WindowsNoEditor
 
 ---
 
-## 🏗️ Сборка Windows-версии проекта c использованием ue5-docker:
+### Сборка Windows-версии проекта c использованием ue5-docker:
 https://github.com/NGTstudio/ue5-docker
 
 1. Клонируем репозиторий и переходим в папку:
@@ -117,7 +117,7 @@ C:\artifacts\BuildOutput\WindowsNoEditor
 ```
 ---
 
-## Комментарии
+### Комментарии
 
 1. Собранный имадж должен оставаться закрытым, так как содержит в метадата значения (ARG GITHUB_USERNAME, ARG GITHUB_TOKEN), указанные при сборке.
 Windows контейнеры не поддерживают пока --secret mount
